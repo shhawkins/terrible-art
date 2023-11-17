@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css"
+    />
+    <title>Image Gallery</title>
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: white;
+      }
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+      }
+      .title {
+        margin-right: auto;
+        margin-left: 150px;
+        font-size: x-large;
+        font-weight: 1000;
+        color: black;
+      }
+      .button {
+        font-size: x-small;
+        align-self: flex-end;
+      }
+      .gallery-row {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 1rem;
+        align-items: center; /* Align items vertically */
+      }
+
+      .gallery-image {
+        display: inline-flex; /* Use inline-flex to keep the div inline */
+        justify-content: center; /* Center the image horizontally */
+        align-items: center; /* Center the image vertically */
+        width: calc(100% / 5); /* Set the width to show 5 images at a time */
+        flex-shrink: 0; /* Prevent the images from shrinking */
+        box-sizing: border-box;
+        margin-right: 10px; /* Add some space between images */
+      }
+
+      .gallery-image img {
+        max-width: 100%;
+        max-height: 900px; /* Set a fixed height for all images */
+        border-radius: 0.3rem;
+        background-color: white;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.9);
+      }
+      .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 90%;
+        max-height: 90%;
+        overflow: auto;
+      }
+      .modal-content img {
+        width: auto;
+        height: auto;
+        max-width: 95%;
+        max-height: 95%;
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      footer {
+        text-align: center;
+        padding: 1rem;
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <span class="close"></span>
+        <img id="modalImg" src="" alt="Modal Image" style="width: 100%;">
+      </div>
+    </div>      
+    <nav class="container-fluid">
+      <ul>
+        <li><strong class="title">Terrible AI Art</strong></li>
+      </ul>
+      <!-- <ul>
+        <li><a class="button" href="#">Home</a></li>
+        <li><a class="button" href="#">About</a></li>
+        <li><a class="button" href="#" role="button">Contact</a></li>
+      </ul> -->
+    </nav>
+    <main class="container">
+      <!-- Rows of images will be inserted here by JS -->
+    </main>
+    <footer class="container">
+      <small>&copy; 2023 Image Gallery</small>
+    </footer>
+    <script>
+      document.addEventListener('DOMContentLoaded', (event) => {
+        // Fetch and display images from imageList.json
+        fetch("imageList.json")
+          .then((response) => response.json())
+          .then((imageList) => {
+            const mainContainer = document.querySelector("main.container");
+            mainContainer.innerHTML = ""; // Clear the container before adding new content
+    
+            // Loop through each folder in the JSON and create image elements
+            for (const [folder, images] of Object.entries(imageList)) {
+              const galleryRow = document.createElement("div");
+              galleryRow.classList.add("gallery-row");
+    
+              images.forEach((imagePath) => {
+                const imgDiv = document.createElement("div");
+                imgDiv.classList.add("gallery-image");
+                const img = document.createElement("img");
+                img.src = imagePath;
+                img.alt = `Image from ${folder}`;
+                imgDiv.appendChild(img);
+                galleryRow.appendChild(imgDiv);
+              });
+    
+              mainContainer.appendChild(galleryRow);
+            }
+          })
+          .catch(error => {
+            console.error('Error loading the image list:', error);
+          });
+    
+        // Modal functionality
+        const modal = document.getElementById('myModal');
+        const modalImg = document.getElementById('modalImg');
+        const closeModal = document.querySelector('.close'); // Get the close button
+    
+        // Event delegation for gallery images to open in modal
+        document.addEventListener('click', function(event) {
+          if (event.target.tagName === 'IMG' && event.target.closest('.gallery-image')) {
+              modal.style.display = 'block';
+              modalImg.src = event.target.src;
+              modalImg.alt = event.target.alt;
+          }
+        });
+    
+        // Close the modal when the close button is clicked
+        closeModal.addEventListener('click', function() {
+          modal.style.display = 'none';
+        });
+
+        // Close modal when image is clicked
+        modalImg.addEventListener('click', function() {
+          modal.style.display = 'none';
+        });
+    
+        // Close the modal when clicking outside of the image
+        modal.addEventListener('click', function(event) {
+          if (event.target === modal) {
+              modal.style.display = 'none';
+          }
+        });
+    
+        // Handle resizing of the gallery images
+        window.addEventListener("resize", function () {
+          document.querySelectorAll(".gallery-image").forEach(function (div) {
+            div.style.flex = "0 0 calc(100%/5)";
+            div.style.maxWidth = "calc(100%/5)";
+          });
+        });
+      });
+    </script>      
+  </body>
+</html>
